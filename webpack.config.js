@@ -3,18 +3,15 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const config = {
-  entry: [
-    'react-hot-loader/patch',
-    './src/index.js'
-  ],
+  entry: './src/index.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle.js'
+    filename: '[name].[contenthash].js'
   },
   module: {
     rules: [
       {
-        test: /\.(js|jsx)$/,
+        test: /\.js$/,
         use: 'babel-loader',
         exclude: /node_modules/
       },
@@ -29,7 +26,8 @@ const config = {
             }
           },
           'postcss-loader'
-        ]
+        ],
+        exclude: /\.module\.css$/
       },
       {
         test: /\.scss$/,
@@ -38,6 +36,21 @@ const config = {
           'css-loader',
           'sass-loader'
         ]
+      },
+      {
+        test: /\.css$/,
+        use: [
+          'style-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              importLoaders: 1,
+              modules: true
+            }
+          },
+          'postcss-loader'
+        ],
+        include: /\.module\.css$/
       },
       {
         test: /\.svg$/,
@@ -56,24 +69,24 @@ const config = {
       }
     ]
   },
-  resolve: {
-    extensions: [
-      '.js',
-      '.jsx'
-    ],
-    alias: {
-      'react-dom': '@hot-loader/react-dom'
-    }
-  },
-  devServer: {
-    contentBase: './dist'
-  },
   plugins: [
     new HtmlWebpackPlugin({
       appMountId: 'app',
       filename: 'index.html'
     })
-  ]
+  ],
+  optimization: {
+    runtimeChunk: 'single',
+    splitChunks: {
+      cacheGroups: {
+        vendor: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendors',
+          chunks: 'all'
+        }
+      }
+    }
+  }
 };
 
 module.exports = config;
